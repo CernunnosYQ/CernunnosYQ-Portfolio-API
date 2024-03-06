@@ -5,8 +5,8 @@ from db.session import engine
 from db import Base
 
 
-def create_tables():
-    Base.metadata.create_all(engine)
+def create_tables() -> None:
+    Base.metadata.create_all(bind=engine)
 
 
 def create_app() -> FastAPI:
