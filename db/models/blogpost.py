@@ -14,5 +14,5 @@ class Blogpost(Base):
     author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     author = relationship("User", back_populates="posts")
     created_at = Column(DateTime, default=func.now(), nullable=False)
-    project = relationship("Project", uselist=False, back_populates="blogpost")
+    project = relationship("Project", uselist=False, back_populates="post")
     is_active = Column(Boolean, default=False)

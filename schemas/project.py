@@ -44,5 +44,5 @@ class ProjectShow(BaseModel):
     stack: List[TagType]
 
 
-class BlogpostUpdate(ProjectCreate):
+class ProjectUpdate(ProjectCreate):
     pass

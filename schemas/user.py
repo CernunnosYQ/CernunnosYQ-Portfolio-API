@@ -6,12 +6,12 @@ import re
 class UserCreate(BaseModel):
     username: str
     email: EmailStr
-    password1: str
+    password: str
     password2: str
 
     @model_validator(mode="after")
     def validate_password(self):
-        pw1 = self.password1
+        pw1 = self.password
         pw2 = self.password2
         pattern = (
             r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
