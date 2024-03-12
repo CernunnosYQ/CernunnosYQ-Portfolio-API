@@ -47,3 +47,9 @@ def retrieve_user_by_username(username: str, db: Session) -> User:
     user = db.query(User).filter(User.username == username).first()
 
     return user
+
+
+def retrieve_user_by_email(email: str, db: Session) -> User:
+    user = db.query(User).filter(User.email == email).first()
+
+    return user

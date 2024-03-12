@@ -17,5 +17,9 @@ class Settings:
     DB_NAME: str = os.getenv("DB_NAME")
     DB_URL: str = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
+    TOKEN_EXPIRE_MINS: int = 30
+    SECRET_KEY: str = os.getenv("SECRET_KEY")
+    JWT_ALGORITHM: str = "HS256"
+
 
 settings = Settings()
