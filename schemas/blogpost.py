@@ -1,6 +1,8 @@
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic.functional_validators import BeforeValidator
 from typing import Optional
+from typing_extensions import Annotated
 
 
 class BlogpostCreate(BaseModel):
@@ -18,15 +20,19 @@ class BlogpostCreate(BaseModel):
         return values
 
 
+AuthorType = Annotated[str, BeforeValidator(lambda user: user.username)]
+
+
 class BlogpostShow(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
+    id: int
     title: str
     slug: str
     banner: str
     content: str
     created_at: datetime
-    author: str
+    author: AuthorType
 
 
 class BlogpostUpdate(BlogpostCreate):
