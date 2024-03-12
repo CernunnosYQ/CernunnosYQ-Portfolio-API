@@ -27,7 +27,7 @@ def create_new_user(user: UserCreate, db: Session = Depends(get_db)):
     return UserShow(**user.__dict__)
 
 
-@user_router.get("/get/{username}", response_model=UserShow)
+@user_router.get("/get/user/{username}", response_model=UserShow)
 def read_user_information(username: str, db: Session = Depends(get_db)):
     """
     Retrieve user info by its username
