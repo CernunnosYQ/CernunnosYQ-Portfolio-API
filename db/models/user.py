@@ -1,3 +1,4 @@
+from fastapi import status
 from sqlalchemy import (
     Boolean,
     Column,
@@ -11,7 +12,7 @@ from sqlalchemy.orm import relationship, Session
 from sqlalchemy.sql import func
 
 from core.hashing import Hasher
-from schemas import UserCreate, UserUpdate
+from schemas import UserCreate, UserUpdate, UserPasswordUpdate
 from db import Base
 
 
@@ -53,3 +54,36 @@ def retrieve_user_by_email(email: str, db: Session) -> User:
     user = db.query(User).filter(User.email == email).first()
 
     return user
+
+
+def update_user_password(
+    user_id: int, pwd_data: UserPasswordUpdate, current_user: User, db: Session
+):
+    user_in_db = db.query(User).filter(User.id == user_id).one_or_none()
+    if not user_in_db:
+        return {"status_code": status.HTTP_404_NOT_FOUND, "detail": "User not found"}
+    if not current_user.is_superuser and current_user != user_in_db:
+        return {
+            "status_code": status.HTTP_403_FORBIDDEN,
+            "detail": "Only the owner or an admin can change the password",
+        }
+    if not Hasher.verify_password(pwd_data.old_password, user_in_db.password):
+        return {"status_code": status.HTTP_401_UNAUTHORIZED, "detail": "Wrong password"}
+    user_in_db.password = Hasher.hash_password(pwd_data.new_password)
+    db.commit()
+
+    return {"success": True}
+
+
+def delete_user_by_id(user_id: int, current_user: User, db: Session):
+    user_in_db = db.query(User).filter(User.id == user_id).one_or_none()
+    if not user_in_db:
+        return {"status_code": status.HTTP_404_NOT_FOUND, "detail": "User not found"}
+    if not current_user.is_superuser and current_user != user_in_db:
+        return {
+            "status_code": status.HTTP_403_FORBIDDEN,
+            "detail": "You do not have permission to perform this action.",
+        }
+    db.delete(user_in_db)
+    db.commit()
+    return {"success": True}

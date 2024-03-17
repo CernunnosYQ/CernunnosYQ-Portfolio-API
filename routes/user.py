@@ -3,8 +3,15 @@ from email_validator import validate_email, EmailNotValidError
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from db.models.user import create_user, retrieve_user_by_username
+from db.models.user import (
+    create_user,
+    delete_user_by_id,
+    retrieve_user_by_username,
+    update_user_password,
+    User,
+)
 from db.session import get_db
+from routes.auth import get_current_user
 from schemas import Message, UserCreate, UserShow, UserPasswordUpdate
 
 user_router = APIRouter()
@@ -43,29 +50,44 @@ def read_user_information(username: str, db: Session = Depends(get_db)):
     return UserShow(**user.__dict__)
 
 
-# @user_router.put(
-#     "/update/password/{id}",
-#     status_code=status.HTTP_202_ACCEPTED,
-#     response_model=Message
-# )
-# def  update_user_password(
-#     id: int, password: UserPasswordUpdate, db: Session = Depends(get_db)
-# ):
-#     """
-#     Update an existing user's password.
-#     """
+@user_router.put(
+    "/update/password/{id}",
+    status_code=status.HTTP_200_OK,
+    response_model=Message,
+)
+def update_password(
+    id: int,
+    pwd_data: UserPasswordUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Update an existing user's password.
+    """
 
-#     pass
+    result = update_user_password(
+        user_id=id, pwd_data=pwd_data, db=db, current_user=current_user
+    )
+
+    if result.get("success"):
+        return Message(message="Password updated successfully")
+    else:
+        raise HTTPException(**result)
 
 
-# @user_router.delete("/remove/{id}")
-# async def remove_user(
-#     id: int,
-#     current_user: User = Depends(is_self_or_admin),
-#     db: Session = Depends(get_db),
-# ):
-#     """
-#     Delete a specific user account. Only available to the owner of the account or admin users.
-#     """
+@user_router.delete("/delete/user/{id}")
+async def delete_user(
+    id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Delete a specific user account. Only available to the owner of the account or admin users.
+    """
 
-#     pass
+    result = delete_user_by_id(user_id=id, current_user=current_user, db=db)
+
+    if result.get("success"):
+        return Message(message="User removed successfully")
+    else:
+        raise HTTPException(**result)
