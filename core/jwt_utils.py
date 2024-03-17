@@ -17,16 +17,16 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
         algorithm=settings.JWT_ALGORITHM,
     )
 
-    return token.encode("UTF-8")
+    return token
 
 
-def validate_access_token(token: str) -> dict:
+def validate_access_token(token: bytes) -> dict:
     try:
-        data = decode(
-            token=token, key=settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
+        decoded_token = decode(
+            token, key=settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
         )
 
-        return {"success": True, "payload": data.get("payload")}
+        return {"success": True, "payload": decoded_token}
     except exceptions.DecodeError:
         detail = "Invalid token."
     except exceptions.ExpiredSignatureError:
