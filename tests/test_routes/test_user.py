@@ -1,5 +1,5 @@
 from fastapi import status
-from tests.utils import create_custom_test_user, create_default_test_user
+from tests.utils import create_custom_test_user, create_random_test_user
 from core.jwt_utils import validate_access_token
 
 
@@ -100,9 +100,13 @@ def test_delete_user(client, db_session):
 
 
 def test_login(client, db_session):
-    create_custom_test_user(DATA, db=db_session)
+    (
+        user,
+        plain_password,
+        _,
+    ) = create_random_test_user(db=db_session)
     login_response = client.post(
-        "/api/login", data={"username": DATA["username"], "password": DATA["password"]}
+        "/api/login", data={"username": user.username, "password": plain_password}
     )
 
     assert login_response.status_code == status.HTTP_200_OK
