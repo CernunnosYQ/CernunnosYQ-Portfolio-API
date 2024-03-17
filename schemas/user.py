@@ -51,13 +51,13 @@ class UserUpdate(BaseModel):
 
 class UserPasswordUpdate(BaseModel):
     old_password: str
-    new_password1: str
-    new_passwor2: str
+    new_password: str
+    new_password2: str
 
     @model_validator(mode="after")
     def validate_password(self):
-        pw1 = self.password1
-        pw2 = self.password2
+        pw1 = self.new_password
+        pw2 = self.new_password2
         pattern = (
             r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
         )
