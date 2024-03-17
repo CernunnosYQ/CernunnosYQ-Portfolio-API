@@ -21,7 +21,7 @@ def create_custom_test_user(user_data: dict, db: Session):
 
     access_token = create_access_token(data={"sub": user.username})
 
-    return user.id, access_token
+    return user, access_token
 
 
 def create_default_test_user(db: Session):
