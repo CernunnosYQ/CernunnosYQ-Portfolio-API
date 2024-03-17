@@ -1,3 +1,4 @@
+from fastapi import HTTPException, status
 from pydantic import BaseModel, ConfigDict, EmailStr, model_validator
 from typing import List, Optional
 import re
@@ -18,10 +19,14 @@ class UserCreate(BaseModel):
         )
 
         if pw1 is not None and pw2 is not None and pw1 != pw2:
-            raise ValueError("Passwords do not match")
+            raise HTTPException(
+                detail="Passwords do not match", status_code=status.HTTP_400_BAD_REQUEST
+            )
 
         if re.match(pattern, pw1) is None:
-            raise ValueError("Password is not secure")
+            raise HTTPException(
+                detail="Password is not secure", status_code=status.HTTP_400_BAD_REQUEST
+            )
 
         return self
 
@@ -58,9 +63,13 @@ class UserPasswordUpdate(BaseModel):
         )
 
         if pw1 is not None and pw2 is not None and pw1 != pw2:
-            raise ValueError("Passwords do not match")
+            raise HTTPException(
+                detail="Passwords do not match", status_code=status.HTTP_400_BAD_REQUEST
+            )
 
         if re.match(pattern, pw1) is None:
-            raise ValueError("Password is not secure")
+            raise HTTPException(
+                detail="Password is not secure", status_code=status.HTTP_400_BAD_REQUEST
+            )
 
         return self

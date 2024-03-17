@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from email_validator import validate_email, EmailNotValidError
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from db.models.user import create_user, retrieve_user_by_username
