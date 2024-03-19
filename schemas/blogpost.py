@@ -33,6 +33,7 @@ class BlogpostShow(BaseModel):
     content: str
     created_at: datetime
     author: AuthorType
+    is_active: bool
 
 
 class BlogpostUpdate(BlogpostCreate):

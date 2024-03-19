@@ -11,7 +11,9 @@ from db.models.blogpost import (
     update_blogpost_with_id,
     delete_blogpost_by_id,
 )
+from db.models.user import User
 from db.session import get_db
+from routes.auth import get_current_user
 from schemas import BlogpostShow, BlogpostCreate, BlogpostUpdate, Message
 
 blog_router = APIRouter()
@@ -33,6 +35,11 @@ def get_post_by_id(post_id: int, db: Session = Depends(get_db)):
     """
 
     post = retrieve_blogpost_by_id(id=post_id, db=db)
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Post with ID {post_id} does not exist",
+        )
     return BlogpostShow(**post.__dict__)
 
 
@@ -43,11 +50,22 @@ def get_post_by_slug(post_slug: str, db: Session = Depends(get_db)):
     """
 
     post = retrieve_blogpost_by_slug(slug=post_slug, db=db)
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Post with slug {post_slug} does not exist",
+        )
     return BlogpostShow(**post.__dict__)
 
 
-@blog_router.post("/create/post")
-def create_new_post(post: BlogpostCreate, db: Session = Depends(get_db)):
+@blog_router.post(
+    "/create/post", status_code=status.HTTP_201_CREATED, response_model=BlogpostShow
+)
+def create_new_post(
+    post: BlogpostCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     """
     Creates a new blog post
     """
@@ -59,19 +77,24 @@ def create_new_post(post: BlogpostCreate, db: Session = Depends(get_db)):
             status_code=status.HTTP_409_CONFLICT, detail="Title already exists."
         )
 
-    new_post = create_new_blogpost(blogpost=post, db=db)
+    new_post = create_new_blogpost(blogpost=post, author_id=current_user.id, db=db)
     return BlogpostShow(**new_post.__dict__)
 
 
 @blog_router.put("/update/post/{post_id}")
 def update_existing_post(
-    post_id: int, new_data: BlogpostUpdate, db: Session = Depends(get_db)
+    post_id: int,
+    new_data: BlogpostUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     """
     Updates an existing blog post
     """
 
-    updated_post = update_blogpost_with_id(post_id=post_id, new_data=new_data, db=db)
+    updated_post = update_blogpost_with_id(
+        post_id=post_id, new_data=new_data, current_user=current_user, db=db
+    )
     if isinstance(updated_post, dict):
         raise HTTPException(**updated_post)
 
@@ -79,12 +102,16 @@ def update_existing_post(
 
 
 @blog_router.delete("/delete/post/{post_id}", response_model=Message)
-def delete_existing_post(post_id: int, db: Session = Depends(get_db)):
+def delete_existing_post(
+    post_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     """
     Deletes a specific blog post by ID
     """
 
-    result = delete_blogpost_by_id(post_id=post_id, db=db)
+    result = delete_blogpost_by_id(post_id=post_id, current_user=current_user, db=db)
 
     if result.get("success"):
         return {"message": "Blogpost deleted successfully"}
