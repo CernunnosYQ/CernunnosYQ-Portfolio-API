@@ -1,1 +1,2 @@
 from .user import create_custom_test_user, create_random_test_user
+from .blogpost import create_random_test_blogpost, create_random_test_blogpost_list
